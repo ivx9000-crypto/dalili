@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dalili-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dalili
+      POSTGRES_USER: dalili_user
+      POSTGRES_PASSWORD: dalili_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - dalili_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dalili_user -d dalili"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  dalili_postgres_data:

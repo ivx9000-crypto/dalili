@@ -1,0 +1,34 @@
+# Dalili Render blueprint. You can also configure these services manually in Render.
+# Deployment order: create PostgreSQL first, deploy backend, then deploy frontend.
+
+services:
+  - type: web
+    name: dalili-api
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: sh start_production.sh
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_NAME
+        value: Dalili API
+      - key: AUTO_CREATE_TABLES
+        value: false
+      - key: PASSWORD_RESET_MODE
+        value: production_email_required
+      - key: DEMO_MODE
+        value: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: FRONTEND_BASE_URL
+        sync: false
+      - key: UPLOAD_STORAGE_DIR
+        value: app/storage/uploads
+      - key: MAX_UPLOAD_MB
+        value: 50
