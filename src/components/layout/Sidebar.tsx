@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Users,
   UserCircle,
+  LifeBuoy,
 } from "lucide-react";
 import { getSession, isAdminRole } from "@/lib/auth-client";
 
@@ -30,6 +31,7 @@ const navItems = [
   { name: "Documents", href: "/documents", icon: FileText },
   { name: "Maps", href: "/maps", icon: Map },
   { name: "AI Assistant", href: "/ai-assistant", icon: Bot },
+  { name: "Help & Testing", href: "/support", icon: LifeBuoy },
   { name: "Team", href: "/team", icon: Users },
   { name: "Account", href: "/account", icon: UserCircle },
   { name: "Admin Users", href: "/admin/users", icon: Users },

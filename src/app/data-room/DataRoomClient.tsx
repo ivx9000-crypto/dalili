@@ -14,6 +14,7 @@ import {
   UploadCloud,
   XCircle,
 } from "lucide-react";
+import { logDaliliError } from "@/lib/error-log";
 
 type CellValue = string | number | boolean | null;
 type Row = Record<string, CellValue>;
@@ -70,6 +71,8 @@ type DatasetMetadataResponse = {
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE || "http://127.0.0.1:8000";
 const PROJECTS_KEY = "dalili.projects";
 const ACTIVE_PROJECT_KEY = "dalili.activeProject";
+const MAX_BROWSER_FILE_SIZE_MB = 15;
+const MAX_BROWSER_FILE_SIZE_BYTES = MAX_BROWSER_FILE_SIZE_MB * 1024 * 1024;
 
 function readJson<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -550,6 +553,22 @@ export function DataRoomClient() {
     setCurrentFile(file);
     syncedDatasetKeyRef.current = "";
 
+    const lowerName = file.name.toLowerCase();
+    const supportedFile = lowerName.endsWith(".xlsx") || lowerName.endsWith(".xls") || lowerName.endsWith(".csv");
+    if (!supportedFile) {
+      setRows([]);
+      setIsReading(false);
+      setError("This file type is not supported yet. Upload a CSV, XLS, or XLSX file.");
+      return;
+    }
+
+    if (file.size > MAX_BROWSER_FILE_SIZE_BYTES) {
+      setRows([]);
+      setIsReading(false);
+      setError(`This file is ${Math.round(file.size / 1024 / 1024)}MB. For this testing version, use files under ${MAX_BROWSER_FILE_SIZE_MB}MB. Larger server-side processing will be enabled after stability testing.`);
+      return;
+    }
+
     try {
       const arrayBuffer = await file.arrayBuffer();
       const workbook = XLSX.read(arrayBuffer, { type: "array" });
@@ -575,6 +594,7 @@ export function DataRoomClient() {
       setRows(cleanedRows);
     } catch (err) {
       setRows([]);
+      logDaliliError("Data Room file upload", err, `File: ${file.name}; size: ${file.size} bytes`);
       setError("Dalili could not read this file. Try a CSV, XLS, or XLSX file with a clear header row.");
     } finally {
       setIsReading(false);
@@ -691,7 +711,7 @@ export function DataRoomClient() {
           <label className="mt-6 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center transition hover:border-dalili-green hover:bg-emerald-50">
             <UploadCloud className="h-12 w-12 text-dalili-green" />
             <span className="mt-4 text-lg font-bold text-dalili-ink">Drop your file here or click to browse</span>
-            <span className="mt-2 text-sm text-slate-500">Supported now: .xlsx, .xls, .csv</span>
+            <span className="mt-2 text-sm text-slate-500">Supported now: .xlsx, .xls, .csv · testing limit 15MB</span>
             <input
               type="file"
               className="hidden"

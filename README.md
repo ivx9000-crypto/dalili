@@ -1,17 +1,19 @@
-# Dalili Starter v56 — AI-Guided M&E Workflow and Track Results
+# Dalili starter v58 — Production Stability and First-User Testing
 
-This version builds on v55.1 and integrates AI guidance more visibly across the project journey.
+This version preserves v57 and adds stability, first-user testing, and support tools.
 
-Main changes:
-- Reframes Indicators as **Track Results**.
-- Adds plain-language result questions for non-M&E users.
-- Adds AI-suggested measures by sector.
-- Adds Dalili AI interpretation on the Track Results page.
-- Adds AI draft M&E plan to the Project Guide.
-- Adds next-action AI guidance to workflow nudges.
-- Keeps the advanced indicator builder for M&E/data users.
+## New in v58
 
-Install by copying files into `D:\Dalili`, then run:
+- `/support` Help & Testing page.
+- Local browser error log and global crash screen.
+- Data Room upload validation for unsupported files and >15MB browser-side files.
+- Backend `/ops/stability` endpoint.
+- Topbar notification when local issue notes exist.
+- First-user testing, backup, monitoring, and stability docs.
+
+## Install
+
+Copy the package into `D:\Dalili`, replacing files.
 
 ```powershell
 cd D:\Dalili
@@ -20,7 +22,7 @@ npm run build
 npm run dev
 ```
 
-Backend if testing locally:
+Backend:
 
 ```powershell
 cd D:\Dalili\backend
@@ -28,46 +30,39 @@ D:\Dalili\.venv\Scripts\Activate.ps1
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-After local build passes:
-
-```powershell
-git add .
-git commit -m "Add AI-guided M&E workflow and track results"
-git push
-```
-
-Redeploy Vercel. Redeploy Render only if you want the updated backend AI Assistant responses online.
-
-
-## v57 — Compact UI and Explain-on-Demand Polish
-
-This version keeps the guided M&E workflow from v56 but makes the interface more compact and less process-heavy.
-
-Main principle: **Compact by default. Explain on demand.**
-
-### Key changes
-
-- Reduced sidebar and page spacing.
-- Reworked Project Guide into a compact command centre.
-- Reworked workflow nudge so it shows the next action first and moves process guidance into “Why this matters”.
-- Reduced Track Results card spacing.
-- Moved suggested indicator rules behind collapsible details.
-- Moved AI calculation/process explanation behind an evidence note.
-- Preserved guided M&E setup, v55.1 Data Room crash fix, reports, maps, AI Assistant, deployment setup, PostgreSQL, authentication, branding and privacy pages.
-
-### Test
-
-Run:
+## Test
 
 ```powershell
 cd D:\Dalili
-npm install
-npm run build
-npm run dev
+.\scripts\v58_production_stability_checklist.bat
 ```
 
-Then:
+Open:
+
+- `/support`
+- `/workspace`
+- `/data-room`
+- `/quality-check`
+- `/indicators`
+- `/reports`
+- `/settings`
+
+Backend endpoints:
+
+- `/health`
+- `/ops/version`
+- `/ops/database`
+- `/ops/stability`
+
+## Deploy
+
+After build passes:
 
 ```powershell
-.\scripts57_compact_ui_checklist.bat
+cd D:\Dalili
+git add .
+git commit -m "Add production stability and first-user testing tools"
+git push
 ```
+
+Redeploy Vercel. Redeploy Render if backend files changed.

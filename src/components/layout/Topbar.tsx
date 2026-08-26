@@ -50,6 +50,18 @@ function readActiveProjectId(): string {
   }
 }
 
+
+function readLocalErrorCount(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const raw = window.localStorage.getItem("dalili.errorLog");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 function getTimeGreeting() {
   const hour = new Date().getHours();
   if (hour < 12) return "Good morning";
@@ -65,6 +77,11 @@ function buildNotifications(projects: Project[], activeProject?: Project): Notif
   const latestReport = window.localStorage.getItem("dalili.latestBackendReportDraft");
   const reportStatus = window.localStorage.getItem("dalili.reportStatus") || "draft";
   const items: NotificationItem[] = [];
+  const errorCount = readLocalErrorCount();
+
+  if (errorCount > 0) {
+    items.push({ id: "local-errors", title: `${errorCount} local issue note${errorCount === 1 ? "" : "s"}`, description: "Open Help & Testing to review or export the local error log before wider user testing.", href: "/support", level: "warning" });
+  }
 
   if (!projects.length) {
     items.push({ id: "no-project", title: "Create your first project", description: "Dalili will then guide you through the M&E steps, even if you do not have an M&E person.", href: "/projects?new=1", level: "warning" });
@@ -122,10 +139,12 @@ export function Topbar() {
     window.addEventListener("storage", onStorage);
     window.addEventListener("dalili-projects-changed", onStorage);
     window.addEventListener("dalili-branding-changed", onStorage);
+    window.addEventListener("dalili-error-log-changed", onStorage);
     return () => {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("dalili-projects-changed", onStorage);
       window.removeEventListener("dalili-branding-changed", onStorage);
+      window.removeEventListener("dalili-error-log-changed", onStorage);
     };
   }, []);
 

@@ -106,9 +106,9 @@ def system_check():
 @router.get("/version")
 def ops_version():
     return {
-        "version": "0.54.0",
+        "version": "0.58.0",
         "ops_database_route": "/ops/database",
-        "status": "v54 online deployment execution pack loaded",
+        "status": "v58 production stability and first-user testing pack loaded",
     }
 
 
@@ -137,4 +137,27 @@ def database_status():
             if settings.auto_create_tables else
             "Database is configured for migration-managed operation."
         ),
+    }
+
+
+@router.get("/stability")
+def stability_check():
+    db = _db_status()
+    storage_dir = Path("app/storage/uploads")
+    return {
+        "version": "0.58.0",
+        "environment": settings.app_env,
+        "backend_ok": True,
+        "database_ok": db["ok"],
+        "database_engine": settings.database_engine_name,
+        "storage_path_exists": storage_dir.exists(),
+        "production_ready_database": settings.database_engine_name == "postgresql" and not settings.auto_create_tables,
+        "checks": [
+            {"name": "Backend responds", "ok": True},
+            {"name": "Database connection", "ok": db["ok"], "message": db["message"]},
+            {"name": "PostgreSQL in production", "ok": not settings.is_production or settings.database_engine_name == "postgresql"},
+            {"name": "Migrations expected in production", "ok": not settings.is_production or not settings.auto_create_tables},
+            {"name": "Upload storage path available", "ok": storage_dir.exists()},
+        ],
+        "first_user_testing_note": "Use small non-sensitive datasets first. Confirm project setup, upload, quality check, Track Results, report export, logout and login before inviting wider users.",
     }
