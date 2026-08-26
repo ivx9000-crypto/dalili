@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, BarChart3, CheckCircle2, ClipboardList, Database, FileText, HelpCircle, Lightbulb, Map, ShieldAlert, Sparkles } from "lucide-react";
 import type { ElementType } from "react";
 import { getActiveProject, getWorkflowProgressPercent, getWorkflowSteps, type DaliliProject, type WorkflowStep } from "@/lib/workflow";
+import { getSuggestedIndicatorsForSector } from "@/lib/ai-guidance";
 
 const planTemplates: Record<string, string[]> = {
   "Health / SRH / HIV": [
@@ -93,6 +94,7 @@ export function WorkspaceClient() {
 
   const currentStep = useMemo(() => steps.find((step) => step.status === "current") ?? steps[steps.length - 1], [steps]);
   const suggestedIndicators = planTemplates[project?.sector ?? "Other"] ?? planTemplates.Other;
+  const aiSuggestedIndicators = getSuggestedIndicatorsForSector(project?.sector).slice(0, 4);
 
   if (!project) {
     return (
@@ -172,6 +174,26 @@ export function WorkspaceClient() {
         </div>
 
         <div className="space-y-5">
+          <section className="card border-amber-100 bg-amber-50 p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-white p-3 text-amber-700"><Sparkles className="h-5 w-5" /></div>
+              <div>
+                <h2 className="text-lg font-black text-amber-950">Dalili AI draft M&E plan</h2>
+                <p className="mt-1 text-sm leading-6 text-amber-900">Based on the project sector and details available, Dalili suggests a simple monitoring plan. Edit it as your project becomes clearer.</p>
+              </div>
+            </div>
+            <div className="mt-4 space-y-3">
+              {aiSuggestedIndicators.map((item) => (
+                <div key={item.label} className="rounded-2xl bg-white p-3 text-sm shadow-sm">
+                  <div className="font-black text-[#102033]">{item.plainQuestion}</div>
+                  <div className="mt-1 text-xs leading-5 text-slate-600">{item.description}</div>
+                  <div className="mt-2 rounded-xl bg-slate-50 p-2 text-[11px] leading-5 text-slate-500">{item.suggestedFormula}</div>
+                </div>
+              ))}
+            </div>
+            <a href="/indicators" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#073B2A] px-4 py-3 text-sm font-black text-white">Use these to track results <ArrowRight className="h-4 w-4" /></a>
+          </section>
+
           <section className="card p-5">
             <div className="flex items-start gap-3">
               <div className="rounded-2xl bg-emerald-50 p-3 text-[#073B2A]"><ClipboardList className="h-5 w-5" /></div>
@@ -188,7 +210,7 @@ export function WorkspaceClient() {
                 </div>
               ))}
             </div>
-            <a href="/indicators" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 px-4 py-3 text-sm font-black text-[#073B2A] hover:bg-emerald-50">Turn these into indicators <ArrowRight className="h-4 w-4" /></a>
+            <a href="/indicators" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 px-4 py-3 text-sm font-black text-[#073B2A] hover:bg-emerald-50">Turn these into tracked results <ArrowRight className="h-4 w-4" /></a>
           </section>
 
           <section className="card p-5">
@@ -196,7 +218,7 @@ export function WorkspaceClient() {
             <div className="mt-4 space-y-3 text-sm leading-6 text-slate-600">
               <Guide icon={Database} title="Evidence" text="Anything that proves what happened: registers, surveys, Kobo exports, reports, photos lists, attendance or finance records." />
               <Guide icon={ShieldAlert} title="Quality check" text="A safety check before using numbers in a report. It flags missing, duplicated, inconsistent or sensitive data." />
-              <Guide icon={BarChart3} title="Indicator" text="A simple measure of progress, such as people reached, percent completed, target achieved, or satisfaction level." />
+              <Guide icon={BarChart3} title="Tracked result" text="A simple measure of progress, such as people reached, percent completed, target achieved, or satisfaction level." />
               <Guide icon={Lightbulb} title="Insight" text="A finding that explains what the data means and what action may be needed." />
               <Guide icon={FileText} title="Output" text="The final report, brief, DQA summary or presentation you can share with a donor, client or manager." />
               <Guide icon={Map} title="Location view" text="A way to see where performance is strong, weak, missing or unequal across project areas." />

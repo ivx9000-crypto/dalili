@@ -24,7 +24,7 @@ const navItems = [
   { name: "Project Guide", href: "/workspace", icon: ClipboardList },
   { name: "Data Room", href: "/data-room", icon: Database },
   { name: "Quality Check", href: "/quality-check", icon: ShieldCheck },
-  { name: "Indicators", href: "/indicators", icon: BarChart3 },
+  { name: "Track Results", href: "/indicators", icon: BarChart3 },
   { name: "Insights", href: "/insights", icon: Lightbulb },
   { name: "Reports", href: "/reports", icon: FileText },
   { name: "Documents", href: "/documents", icon: FileText },

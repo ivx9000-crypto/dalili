@@ -2,18 +2,31 @@
 
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, HelpCircle, ShieldCheck } from "lucide-react";
-import { getActiveProject, getNextWorkflowStep, getWorkflowProgressPercent, type WorkflowStep } from "@/lib/workflow";
+import { getActiveProject, getNextWorkflowStep, getWorkflowProgressPercent, hasLatestDataset, hasLatestQuality, hasLatestIndicator, hasReviewedInsights, hasLatestReport, type WorkflowStep } from "@/lib/workflow";
+import { getAiWorkflowSuggestions, type DaliliAiSuggestion } from "@/lib/ai-guidance";
 
 export function WorkflowNudge({ context = "page" }: { context?: string }) {
   const [step, setStep] = useState<WorkflowStep | null>(null);
   const [projectName, setProjectName] = useState<string>("");
   const [progress, setProgress] = useState(0);
+  const [aiSuggestion, setAiSuggestion] = useState<DaliliAiSuggestion | null>(null);
 
   useEffect(() => {
     const refresh = () => {
       setStep(getNextWorkflowStep());
       setProgress(getWorkflowProgressPercent());
-      setProjectName(getActiveProject()?.name ?? "");
+      const project = getActiveProject();
+      setProjectName(project?.name ?? "");
+      const suggestions = getAiWorkflowSuggestions({
+        hasProject: Boolean(project),
+        hasDataset: hasLatestDataset(),
+        hasQuality: hasLatestQuality(),
+        hasIndicator: hasLatestIndicator(),
+        hasInsights: hasReviewedInsights(),
+        hasReport: hasLatestReport(),
+        sector: project?.sector,
+      });
+      setAiSuggestion(suggestions[0] ?? null);
     };
     refresh();
     window.addEventListener("storage", refresh);
@@ -38,6 +51,11 @@ export function WorkflowNudge({ context = "page" }: { context?: string }) {
             <h2 className="mt-1 text-xl font-black text-[#102033]">{step.plainTitle}</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">{step.description}</p>
             <p className="mt-2 max-w-3xl rounded-2xl bg-white/80 p-3 text-xs leading-5 text-slate-500">{step.beginnerHelp}</p>
+            {aiSuggestion ? (
+              <p className="mt-2 max-w-3xl rounded-2xl border border-amber-100 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+                <span className="font-black">Dalili AI guide:</span> {aiSuggestion.description}
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="min-w-52">

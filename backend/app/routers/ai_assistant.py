@@ -213,6 +213,32 @@ def answer_question(question: str, context: dict[str, Any]) -> str:
     if not any([project, dataset, quality, indicator, report, document, map_summary, compliance]):
         return "I cannot find backend project context yet. Create or select a backend project, upload a dataset, and run a backend DQA or indicator before asking for project guidance."
 
+
+    if any(term in q for term in ["m&e plan", "me plan", "monitoring plan", "what should", "track", "collect", "setup", "set up", "no m&e"]):
+        if not project:
+            return "Start by creating a backend-saved project with project name, sector, geography, target group, donor/client and reporting period. After that, I can suggest a simple M&E plan and evidence checklist."
+        sector = (project.get("sector") or "general project").lower()
+        suggested = [
+            "people or sites reached",
+            "activities completed against the workplan",
+            "target achievement",
+            "beneficiary/client satisfaction",
+            "location and group breakdowns",
+            "barriers, risks and corrective actions",
+        ]
+        if any(term in sector for term in ["health", "hiv", "srh", "clinic"]):
+            suggested = ["clients reached with services", "eligible clients receiving intended service", "referral completion", "client satisfaction", "age/sex/location breakdown", "service availability or stock-out issues"]
+        elif any(term in sector for term in ["education", "training", "skills", "school"]):
+            suggested = ["learners enrolled", "attendance", "completion", "skills or learning improvement", "employment/internship outcome where relevant", "learner satisfaction and barriers"]
+        elif any(term in sector for term in ["agric", "farmer", "livelihood", "food"]):
+            suggested = ["farmers/participants reached", "training completion", "adoption of promoted practices", "access to inputs or markets", "income/yield improvement where follow-up data exists", "gender/location breakdown"]
+        return (
+            f"For {project.get('name')}, a simple M&E plan should track: " + "; ".join(suggested) + ". "
+            "Evidence to collect: beneficiary or participant register, activity attendance/completion sheet, service or output tracker, short feedback/satisfaction form, location field, and any follow-up outcome evidence. "
+            "Recommended process: upload evidence, run a quality check, track one or two priority results first, review Dalili's findings, then create a short donor/client update. "
+            "Keep it simple: start with reach, completion, target achievement, satisfaction and who is being left out."
+        )
+
     if any(term in q for term in ["quality", "dqa", "missing", "duplicate", "clean"]):
         if not quality:
             return "I cannot find a backend-saved quality report yet. Run Backend DQA from Data Room or Quality Check first."
@@ -230,7 +256,7 @@ def answer_question(question: str, context: dict[str, Any]) -> str:
 
     if any(term in q for term in ["indicator", "target", "calculation", "performance", "result"]):
         if not indicator:
-            return "I cannot find a backend-saved indicator result yet. Calculate and save an indicator from the Indicators page or Backend Engine page."
+            return "I cannot find a backend-saved tracked result yet. Use Track Results to calculate and save a result first."
         target = indicator.get("target")
         gap = None if target is None else float(target) - float(indicator.get("percentage") or 0)
         return (
@@ -293,7 +319,7 @@ def answer_question(question: str, context: dict[str, Any]) -> str:
 
     return (
         "I can answer using backend-saved Dalili context: project, dataset, DQA, indicator, insights, reports, documents, maps, and compliance settings. "
-        "Ask for the latest indicator result, DQA caveats, donor report wording, map summary, document themes, or compliance status."
+        "Ask for a simple M&E plan, what to track, evidence to collect, latest tracked result, DQA caveats, donor report wording, map summary, document themes, or compliance status."
     )
 
 

@@ -26,14 +26,14 @@ type Message = {
 };
 
 const starterQuestions = [
-  "Summarise my backend project context",
-  "What are the main data quality issues?",
-  "Explain the latest indicator result",
-  "Draft a donor update from saved evidence",
-  "Summarise the latest document",
+  "Help me set up a simple M&E plan for this project",
+  "What should this project track?",
+  "What evidence should we collect next?",
+  "Is the uploaded data good enough to use?",
+  "Explain the latest tracked result in simple language",
   "What should I do next?",
-  "What are the compliance risks?",
-  "What does the map summary show?",
+  "Draft a donor or client update from saved evidence",
+  "What risks or weak evidence should I mention?",
 ];
 
 function readJson<T>(key: string): T | null {
@@ -163,9 +163,9 @@ export function AIAssistantClient() {
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-[#0b5e3c]">AI Assistant</p>
-          <h1 className="text-3xl font-bold text-[#102033]">Ask Dalili about your backend evidence</h1>
+          <h1 className="text-3xl font-bold text-[#102033]">Ask Dalili to guide the M&E process</h1>
           <p className="mt-2 max-w-3xl text-sm text-slate-600">
-            The assistant now reads backend-saved context. It remains rule-based for safety: the backend calculates and stores evidence, while the assistant explains only what is available in saved records.
+            Dalili acts like a guided M&E assistant for teams without dedicated M&E staff. It can suggest what to track, explain quality issues, interpret saved results and help draft report text. It still follows the safety rule: Python calculates; Dalili explains only from saved evidence.
           </p>
         </div>
         <div className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-semibold ${statusBadge}`}>
@@ -201,8 +201,8 @@ export function AIAssistantClient() {
                 <Bot className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-bold text-[#102033]">Backend evidence chat</h2>
-                <p className="text-xs text-slate-500">Uses saved project records and writes AI-use audit logs.</p>
+                <h2 className="font-bold text-[#102033]">Guided M&E chat</h2>
+                <p className="text-xs text-slate-500">Uses saved project evidence and keeps the user in control.</p>
               </div>
             </div>
             <button
@@ -242,7 +242,7 @@ export function AIAssistantClient() {
                 if (event.key === "Enter") ask(input);
               }}
               className="min-w-0 flex-1 rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#0b5e3c]"
-              placeholder="Ask about DQA, indicators, reports, documents, maps, or compliance..."
+              placeholder="Ask what to track, what to do next, whether data is usable, or what to report..."
             />
             <button
               onClick={() => ask(input)}

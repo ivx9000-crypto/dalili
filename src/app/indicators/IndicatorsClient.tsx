@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { BarChart3, Calculator, Download, FileWarning, Filter, Target, CheckCircle2 } from "lucide-react";
+import { BarChart3, Calculator, Download, FileWarning, Filter, Target, CheckCircle2, Sparkles, Wand2 } from "lucide-react";
+import { explainIndicatorResult, getSuggestedIndicatorsForSector } from "@/lib/ai-guidance";
 
 type Row = Record<string, string | number | boolean | null>;
 
@@ -20,6 +21,7 @@ type ProjectRecord = {
   backendId?: number;
   name: string;
   organisation?: string;
+  sector?: string;
   source?: "backend" | "local";
 };
 
@@ -127,7 +129,7 @@ async function postIndicatorResult(payload: {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Indicator result sync failed: ${response.status}`);
+    throw new Error(text || `Tracked result sync failed: ${response.status}`);
   }
 
   return response.json() as Promise<IndicatorResultResponse>;
@@ -198,6 +200,7 @@ export function IndicatorsClient() {
   const [backendOnline, setBackendOnline] = useState(false);
   const [isSavingIndicator, setIsSavingIndicator] = useState(false);
   const [backendStatus, setBackendStatus] = useState("Backend not checked yet.");
+  const [mode, setMode] = useState<"simple" | "advanced">("simple");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("dalili.latestDataset");
@@ -223,7 +226,7 @@ export function IndicatorsClient() {
       })
       .catch(() => {
         setBackendOnline(false);
-        setBackendStatus("Backend is offline. Indicator result will remain in browser storage until you start FastAPI.");
+        setBackendStatus("Backend is offline. Tracked result will remain in browser storage until you start FastAPI.");
       });
   }, []);
 
@@ -326,7 +329,7 @@ export function IndicatorsClient() {
       });
 
       window.localStorage.setItem("dalili.latestBackendIndicatorResult", JSON.stringify(saved));
-      setBackendStatus(`Indicator result saved to backend: record #${saved.id} under project #${project.backendId}.`);
+      setBackendStatus(`Tracked result saved to backend: record #${saved.id} under project #${project.backendId}.`);
     } catch {
       setBackendOnline(false);
       setBackendStatus("Backend save failed. The indicator result is still saved in browser storage.");
@@ -338,9 +341,9 @@ export function IndicatorsClient() {
   function exportIndicator() {
     if (!dataset) return;
     const lines = [
-      "DALILI INDICATOR RESULT",
-      "=======================",
-      `Indicator: ${indicatorName}`,
+      "DALILI TRACK RESULTS OUTPUT",
+      "===========================",
+      `Question/measure: ${indicatorName}`,
       `Dataset: ${dataset.fileName}`,
       `Generated: ${new Date().toLocaleString()}`,
       `Numerator rule: ${conditionText(numerator)}`,
@@ -349,13 +352,62 @@ export function IndicatorsClient() {
       validTarget === null ? "Target: Not set" : `Target: ${validTarget}%`,
       validTarget === null ? "Gap to target: Not calculated" : `Gap to target: ${Math.round((results.overall - validTarget) * 10) / 10} percentage points`,
       "",
-      disaggregateBy ? `DISAGGREGATION BY ${disaggregateBy}` : "No disaggregation selected",
+      "DALILI AI EXPLANATION",
+      aiExplanation,
+      "",
+      disaggregateBy ? `BREAKDOWN BY ${disaggregateBy}` : "No breakdown selected",
       ...results.groups.map((item) => `${item.group}: ${item.numerator}/${item.denominator} = ${item.percentage}%`),
       "",
       `Source rows used in prototype: ${dataset.storedRowCount} of ${dataset.totalRowCount}`,
       dataset.note,
     ];
-    downloadText(`dalili-indicator-${indicatorName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`, lines.join("\n"));
+    downloadText(`dalili-track-results-${indicatorName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.txt`, lines.join("\n"));
+  }
+
+  const suggestedQuestions = getSuggestedIndicatorsForSector(activeProject?.sector);
+  const aiExplanation = explainIndicatorResult({
+    name: indicatorName,
+    numerator: results.numeratorCount,
+    denominator: results.denominatorCount,
+    percentage: results.overall,
+    target: validTarget,
+    missingNote: dataset ? `Dalili used ${dataset.storedRowCount} locally available rows out of ${dataset.totalRowCount} total records. Use the Data Room and Quality Check before treating this as final.` : undefined,
+  });
+
+  function bestColumn(keywords: string[]) {
+    const lower = dataset?.columns ?? [];
+    return lower.find((column) => keywords.some((word) => column.toLowerCase().includes(word))) ?? dataset?.columns[0] ?? "";
+  }
+
+  function applySuggestedQuestion(label: string) {
+    setIndicatorName(label);
+    setMode("simple");
+    const text = label.toLowerCase();
+    if (text.includes("completion") || text.includes("completed")) {
+      const column = bestColumn(["complete", "status", "attend", "finish"]);
+      setNumerator({ column, operator: "contains", value: "complete" });
+      setUseAllRecords(true);
+      setTarget("80");
+      return;
+    }
+    if (text.includes("satisfaction") || text.includes("satisfied")) {
+      const column = bestColumn(["satisf", "rating", "score", "experience"]);
+      setNumerator({ column, operator: "contains", value: "satisfied" });
+      setUseAllRecords(true);
+      setTarget("80");
+      return;
+    }
+    if (text.includes("target")) {
+      const column = bestColumn(["target", "actual", "result", "achiev"]);
+      setNumerator({ column, operator: "not_empty", value: "" });
+      setUseAllRecords(true);
+      setTarget("100");
+      return;
+    }
+    const column = bestColumn(["participant", "client", "beneficiary", "served", "reached", "name", "id"]);
+    setNumerator({ column, operator: "not_empty", value: "" });
+    setUseAllRecords(true);
+    setTarget("80");
   }
 
   if (!dataset) {
@@ -366,14 +418,15 @@ export function IndicatorsClient() {
             <FileWarning className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Indicators</p>
-            <h1 className="mt-2 text-2xl font-bold text-dalili-ink">No dataset available for indicator setup</h1>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Track results</p>
+            <h1 className="mt-2 text-2xl font-bold text-dalili-ink">No programme data available yet</h1>
             <p className="mt-3 text-slate-500">
-              Go to Data Room, upload an Excel or CSV file, and Dalili will make the columns available here for numerator, denominator, target, and disaggregation setup.
+              This step helps you answer simple project questions like “How many people did we reach?”, “Who completed the activity?”, and “Are we on track?”. Upload a dataset first so Dalili can calculate the result instead of guessing.
             </p>
-            <a href="/data-room" className="mt-6 inline-flex rounded-2xl bg-dalili-green px-5 py-3 text-sm font-bold text-white">
-              Upload a dataset
-            </a>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a href="/workspace" className="inline-flex rounded-2xl border border-emerald-200 px-5 py-3 text-sm font-bold text-dalili-green">Open project guide</a>
+              <a href="/data-room" className="inline-flex rounded-2xl bg-dalili-green px-5 py-3 text-sm font-bold text-white">Upload programme data</a>
+            </div>
           </div>
         </div>
       </div>
@@ -384,14 +437,38 @@ export function IndicatorsClient() {
 
   return (
     <div className="space-y-6">
+      <section className="card p-6">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Track results</p>
+            <h1 className="mt-2 text-2xl font-black text-dalili-ink">What do you want to know from this project data?</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">For teams without M&E staff, Dalili starts with plain project questions and turns them into measurable results. The advanced indicator builder is still available when you need numerator, denominator, filters, targets and breakdowns.</p>
+          </div>
+          <div className="flex rounded-2xl bg-slate-100 p-1 text-sm font-bold">
+            <button onClick={() => setMode("simple")} className={`rounded-xl px-4 py-2 ${mode === "simple" ? "bg-white text-[#073B2A] shadow-sm" : "text-slate-500"}`}>Simple mode</button>
+            <button onClick={() => setMode("advanced")} className={`rounded-xl px-4 py-2 ${mode === "advanced" ? "bg-white text-[#073B2A] shadow-sm" : "text-slate-500"}`}>Advanced mode</button>
+          </div>
+        </div>
+        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {suggestedQuestions.map((item) => (
+            <button key={item.label} onClick={() => applySuggestedQuestion(item.label)} className="rounded-3xl border border-slate-200 bg-white p-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50">
+              <div className="flex items-center gap-2 text-sm font-black text-[#073B2A]"><Wand2 className="h-4 w-4" /> {item.label}</div>
+              <p className="mt-2 text-sm font-bold text-[#102033]">{item.plainQuestion}</p>
+              <p className="mt-2 text-xs leading-5 text-slate-500">{item.description}</p>
+              <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">Suggested rule: {item.suggestedFormula}</p>
+            </button>
+          ))}
+        </div>
+      </section>
+
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <section className="card p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Indicators</p>
-              <h1 className="mt-2 text-2xl font-bold text-dalili-ink">Indicator builder</h1>
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">{mode === "simple" ? "Simple measure" : "Advanced indicator"}</p>
+              <h1 className="mt-2 text-2xl font-bold text-dalili-ink">{mode === "simple" ? "Measure project progress" : "Advanced indicator builder"}</h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-500">
-                Define the numerator, denominator, target, and disaggregation. Dalili shows the calculation so the result can be reviewed before it becomes an insight or report finding.
+                {mode === "simple" ? "Choose a plain question above, then let Dalili calculate and explain the result. You can still adjust the rule if the suggested column is not right." : "Define the numerator, denominator, target, and disaggregation. Dalili shows the calculation so the result can be reviewed before it becomes an insight or report finding."}
               </p>
               <p className="mt-4 text-sm font-semibold text-slate-600">Dataset: {dataset.fileName}</p>
             </div>
@@ -403,13 +480,24 @@ export function IndicatorsClient() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-bold text-dalili-ink">Indicator name</span>
+              <span className="text-sm font-bold text-dalili-ink">Question or measure name</span>
               <input value={indicatorName} onChange={(event) => setIndicatorName(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-dalili-green" />
             </label>
             <label className="block">
               <span className="text-sm font-bold text-dalili-ink">Target (%)</span>
               <input value={target} onChange={(event) => setTarget(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-dalili-green" />
             </label>
+          </div>
+
+          <div className="mt-6 rounded-3xl border border-amber-100 bg-amber-50 p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-2xl bg-white p-2 text-amber-700"><Sparkles className="h-5 w-5" /></div>
+              <div>
+                <h2 className="font-black text-amber-950">Dalili AI interpretation</h2>
+                <p className="mt-1 text-sm leading-6 text-amber-900">{aiExplanation}</p>
+                <p className="mt-2 text-xs leading-5 text-amber-800">Rule: Python calculates the numbers. Dalili explains what they mean and warns when the evidence is weak.</p>
+              </div>
+            </div>
           </div>
 
           <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">

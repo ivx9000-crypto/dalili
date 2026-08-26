@@ -132,12 +132,12 @@ export function getWorkflowSteps(): WorkflowStep[] {
     },
     {
       key: "indicators",
-      title: "Choose what to measure",
-      plainTitle: "Pick the questions your project must answer",
-      description: "Create simple indicators with numerator, denominator, filters, targets and disaggregation.",
+      title: "Track results",
+      plainTitle: "Choose the question your project must answer",
+      description: "Dalili turns simple project questions into measurable results, with plain-language interpretation and optional advanced indicator settings.",
       href: "/indicators",
-      cta: "Create indicator",
-      beginnerHelp: "An indicator is just a measure. For example: how many people were trained, what percent completed, or which district performed best.",
+      cta: "Track results",
+      beginnerHelp: "You do not need to know M&E jargon. Start with a question like: How many people did we reach? Who completed the activity? Are we on track?",
     },
     {
       key: "insights",
