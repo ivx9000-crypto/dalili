@@ -67,22 +67,22 @@ function buildNotifications(projects: Project[], activeProject?: Project): Notif
   const items: NotificationItem[] = [];
 
   if (!projects.length) {
-    items.push({ id: "no-project", title: "Create your first project", description: "Set up a project before uploading datasets or generating reports.", href: "/projects?new=1", level: "warning" });
+    items.push({ id: "no-project", title: "Create your first project", description: "Dalili will then guide you through the M&E steps, even if you do not have an M&E person.", href: "/projects?new=1", level: "warning" });
   } else if (!activeProject) {
     items.push({ id: "select-project", title: "Select an active project", description: "Choose the project you want Dalili to analyse.", href: "/projects", level: "warning" });
   }
 
   if (activeProject && !latestDataset) {
-    items.push({ id: "no-dataset", title: "Upload a dataset", description: "Upload an Excel or CSV file in Data Room to begin analysis.", href: "/data-room", level: "info" });
+    items.push({ id: "no-dataset", title: "Upload a dataset", description: "Upload an Excel, CSV, Kobo export or document, or open the project guide to see what evidence to collect.", href: "/workspace", level: "info" });
   }
   if (latestDataset && !latestQuality) {
-    items.push({ id: "no-dqa", title: "Run quality check", description: "Generate a DQA report before calculating indicators.", href: "/quality-check", level: "warning" });
+    items.push({ id: "no-dqa", title: "Run quality check", description: "Check whether your data is ready and safe to use before reporting.", href: "/quality-check", level: "warning" });
   }
   if (latestQuality && !latestIndicator) {
-    items.push({ id: "no-indicator", title: "Calculate an indicator", description: "Define a numerator and denominator to produce decision-ready results.", href: "/indicators", level: "info" });
+    items.push({ id: "no-indicator", title: "Calculate an indicator", description: "Choose the question your project needs to answer, then create a simple measure.", href: "/indicators", level: "info" });
   }
   if (latestIndicator && !latestReport) {
-    items.push({ id: "no-report", title: "Generate a report", description: "Use the latest indicator and insights to create a report draft.", href: "/reports", level: "info" });
+    items.push({ id: "no-report", title: "Generate a report", description: "Turn reviewed findings into a donor/client-ready output.", href: "/reports", level: "info" });
   }
   if (latestReport && reportStatus !== "final") {
     items.push({ id: "report-review", title: "Report needs final status", description: `Current report status is ${reportStatus}. Mark it approved or final before sharing externally.`, href: "/reports", level: "warning" });

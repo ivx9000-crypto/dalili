@@ -106,7 +106,7 @@ def system_check():
 @router.get("/version")
 def ops_version():
     return {
-        "version": "0.54.2",
+        "version": "0.54.0",
         "ops_database_route": "/ops/database",
         "status": "v54 online deployment execution pack loaded",
     }

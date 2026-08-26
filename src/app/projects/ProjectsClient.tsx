@@ -334,7 +334,8 @@ export function ProjectsClient() {
         setForm(emptyForm);
         setActiveProjectId(nextProject.id);
         persist(nextProjects, nextProject.id);
-        setSyncMessage("Project saved to backend database and browser storage.");
+        setSyncMessage("Project saved. Opening the guided M&E workspace next.");
+        window.location.href = "/workspace";
         return;
       } catch (error) {
         setSyncMessage("Backend save failed, so the project was kept in browser storage only.");
@@ -345,6 +346,7 @@ export function ProjectsClient() {
     setForm(emptyForm);
     setActiveProjectId(baseProject.id);
     persist(nextProjects, baseProject.id);
+    window.location.href = "/workspace";
   }
 
   function removeProject(projectId: string) {
@@ -559,7 +561,7 @@ export function ProjectsClient() {
         <section className="space-y-6">
           <div className="card p-5">
             <h2 className="text-lg font-bold text-[#102033]">Create project</h2>
-            <p className="mt-1 text-sm text-slate-500">If the backend is online, this is saved to SQLite through FastAPI.</p>
+            <p className="mt-1 text-sm text-slate-500">Create a project first. Dalili will then guide you through the M&E steps: what to collect, how to check it, what to measure, and how to report.</p>
 
             <div className="mt-5 space-y-3">
               <Field label="Project name">
@@ -602,11 +604,11 @@ export function ProjectsClient() {
                 <input value={form.reportingPeriod} onChange={(event) => setForm({ ...form, reportingPeriod: event.target.value })} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0FA67A]" placeholder="e.g. Q2 2026 or Baseline 2026" />
               </Field>
               <Field label="Description">
-                <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="min-h-24 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0FA67A]" placeholder="What decision or report will this project support?" />
+                <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} className="min-h-24 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#0FA67A]" placeholder="What is the project trying to achieve, and what report/client/donor decision should Dalili help you produce?" />
               </Field>
               <button onClick={() => void createProject()} disabled={!form.name.trim() || !form.organisation.trim()} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#073B2A] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#0B4A35] disabled:cursor-not-allowed disabled:opacity-50">
                 <Plus className="h-4 w-4" />
-                Create and activate project
+                Create project and open guide
               </button>
             </div>
           </div>

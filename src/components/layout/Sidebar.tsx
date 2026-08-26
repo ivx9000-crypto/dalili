@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   BarChart3,
   Bot,
+  ClipboardList,
   Database,
   FileText,
   FolderOpen,
@@ -20,6 +21,7 @@ import { getSession, isAdminRole } from "@/lib/auth-client";
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Projects", href: "/projects", icon: FolderOpen },
+  { name: "Project Guide", href: "/workspace", icon: ClipboardList },
   { name: "Data Room", href: "/data-room", icon: Database },
   { name: "Quality Check", href: "/quality-check", icon: ShieldCheck },
   { name: "Indicators", href: "/indicators", icon: BarChart3 },
