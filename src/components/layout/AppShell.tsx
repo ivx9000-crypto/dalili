@@ -33,7 +33,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#f2f4f7] text-[#102033]">
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="min-w-0 flex-1 bg-[#f2f4f7] p-4 md:p-6">
+        <main className="min-w-0 flex-1 bg-[#f2f4f7] p-3 md:p-4">
           {children}
         </main>
       </div>

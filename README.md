@@ -37,3 +37,37 @@ git push
 ```
 
 Redeploy Vercel. Redeploy Render only if you want the updated backend AI Assistant responses online.
+
+
+## v57 — Compact UI and Explain-on-Demand Polish
+
+This version keeps the guided M&E workflow from v56 but makes the interface more compact and less process-heavy.
+
+Main principle: **Compact by default. Explain on demand.**
+
+### Key changes
+
+- Reduced sidebar and page spacing.
+- Reworked Project Guide into a compact command centre.
+- Reworked workflow nudge so it shows the next action first and moves process guidance into “Why this matters”.
+- Reduced Track Results card spacing.
+- Moved suggested indicator rules behind collapsible details.
+- Moved AI calculation/process explanation behind an evidence note.
+- Preserved guided M&E setup, v55.1 Data Room crash fix, reports, maps, AI Assistant, deployment setup, PostgreSQL, authentication, branding and privacy pages.
+
+### Test
+
+Run:
+
+```powershell
+cd D:\Dalili
+npm install
+npm run build
+npm run dev
+```
+
+Then:
+
+```powershell
+.\scripts57_compact_ui_checklist.bat
+```

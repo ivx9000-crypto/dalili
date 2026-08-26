@@ -412,20 +412,20 @@ export function IndicatorsClient() {
 
   if (!dataset) {
     return (
-      <div className="card p-8">
-        <div className="flex max-w-3xl items-start gap-4">
+      <div className="compact-section">
+        <div className="flex max-w-3xl items-start gap-3">
           <div className="rounded-2xl bg-amber-50 p-3 text-amber-700">
             <FileWarning className="h-6 w-6" />
           </div>
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Track results</p>
-            <h1 className="mt-2 text-2xl font-bold text-dalili-ink">No programme data available yet</h1>
+            <h1 className="mt-2 text-xl font-bold text-dalili-ink">No programme data available yet</h1>
             <p className="mt-3 text-slate-500">
               This step helps you answer simple project questions like “How many people did we reach?”, “Who completed the activity?”, and “Are we on track?”. Upload a dataset first so Dalili can calculate the result instead of guessing.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <a href="/workspace" className="inline-flex rounded-2xl border border-emerald-200 px-5 py-3 text-sm font-bold text-dalili-green">Open project guide</a>
-              <a href="/data-room" className="inline-flex rounded-2xl bg-dalili-green px-5 py-3 text-sm font-bold text-white">Upload programme data</a>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <a href="/workspace" className="inline-flex rounded-2xl border border-emerald-200 px-3 py-2 text-sm font-bold text-dalili-green">Open project guide</a>
+              <a href="/data-room" className="inline-flex rounded-2xl bg-dalili-green px-3 py-2 text-sm font-bold text-white">Upload programme data</a>
             </div>
           </div>
         </div>
@@ -436,88 +436,88 @@ export function IndicatorsClient() {
   const gapToTarget = validTarget === null ? null : Math.round((results.overall - validTarget) * 10) / 10;
 
   return (
-    <div className="space-y-6">
-      <section className="card p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+    <div className="space-y-4">
+      <section className="compact-section">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Track results</p>
-            <h1 className="mt-2 text-2xl font-black text-dalili-ink">What do you want to know from this project data?</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">For teams without M&E staff, Dalili starts with plain project questions and turns them into measurable results. The advanced indicator builder is still available when you need numerator, denominator, filters, targets and breakdowns.</p>
+            <h1 className="mt-2 text-xl font-black text-dalili-ink">What do you want to know from this project data?</h1>
+            <p className="mt-2 max-w-3xl text-sm leading-5 text-slate-500">For teams without M&E staff, Dalili starts with plain project questions and turns them into measurable results. The advanced indicator builder is still available when you need numerator, denominator, filters, targets and breakdowns.</p>
           </div>
           <div className="flex rounded-2xl bg-slate-100 p-1 text-sm font-bold">
-            <button onClick={() => setMode("simple")} className={`rounded-xl px-4 py-2 ${mode === "simple" ? "bg-white text-[#073B2A] shadow-sm" : "text-slate-500"}`}>Simple mode</button>
-            <button onClick={() => setMode("advanced")} className={`rounded-xl px-4 py-2 ${mode === "advanced" ? "bg-white text-[#073B2A] shadow-sm" : "text-slate-500"}`}>Advanced mode</button>
+            <button onClick={() => setMode("simple")} className={`rounded-xl px-3 py-2 ${mode === "simple" ? "bg-white text-[#073B2A] shadow-sm" : "text-slate-500"}`}>Simple mode</button>
+            <button onClick={() => setMode("advanced")} className={`rounded-xl px-3 py-2 ${mode === "advanced" ? "bg-white text-[#073B2A] shadow-sm" : "text-slate-500"}`}>Advanced mode</button>
           </div>
         </div>
-        <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {suggestedQuestions.map((item) => (
-            <button key={item.label} onClick={() => applySuggestedQuestion(item.label)} className="rounded-3xl border border-slate-200 bg-white p-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50">
+            <button key={item.label} onClick={() => applySuggestedQuestion(item.label)} className="rounded-2xl border border-slate-200 bg-white p-3 text-left transition hover:border-emerald-200 hover:bg-emerald-50">
               <div className="flex items-center gap-2 text-sm font-black text-[#073B2A]"><Wand2 className="h-4 w-4" /> {item.label}</div>
               <p className="mt-2 text-sm font-bold text-[#102033]">{item.plainQuestion}</p>
               <p className="mt-2 text-xs leading-5 text-slate-500">{item.description}</p>
-              <p className="mt-3 rounded-2xl bg-slate-50 p-3 text-[11px] leading-5 text-slate-500">Suggested rule: {item.suggestedFormula}</p>
+              <details className="compact-details mt-2 text-[11px] text-slate-500"><summary className="font-bold text-[#0B6B4B]">Show suggested rule</summary><p className="mt-1 rounded-xl bg-slate-50 p-2 leading-5">{item.suggestedFormula}</p></details>
             </button>
           ))}
         </div>
       </section>
 
-      <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="card p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <div className="grid gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+        <section className="compact-section">
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">{mode === "simple" ? "Simple measure" : "Advanced indicator"}</p>
-              <h1 className="mt-2 text-2xl font-bold text-dalili-ink">{mode === "simple" ? "Measure project progress" : "Advanced indicator builder"}</h1>
+              <h1 className="mt-2 text-xl font-bold text-dalili-ink">{mode === "simple" ? "Measure project progress" : "Advanced indicator builder"}</h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-500">
                 {mode === "simple" ? "Choose a plain question above, then let Dalili calculate and explain the result. You can still adjust the rule if the suggested column is not right." : "Define the numerator, denominator, target, and disaggregation. Dalili shows the calculation so the result can be reviewed before it becomes an insight or report finding."}
               </p>
-              <p className="mt-4 text-sm font-semibold text-slate-600">Dataset: {dataset.fileName}</p>
+              <p className="mt-3 text-sm font-semibold text-slate-600">Dataset: {dataset.fileName}</p>
             </div>
-            <button onClick={exportIndicator} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-dalili-navy px-5 py-3 text-sm font-bold text-white">
+            <button onClick={exportIndicator} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-dalili-navy px-3 py-2 text-sm font-bold text-white">
               <Download className="h-4 w-4" />
               Export result
             </button>
           </div>
 
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
             <label className="block">
               <span className="text-sm font-bold text-dalili-ink">Question or measure name</span>
-              <input value={indicatorName} onChange={(event) => setIndicatorName(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-dalili-green" />
+              <input value={indicatorName} onChange={(event) => setIndicatorName(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-dalili-green" />
             </label>
             <label className="block">
               <span className="text-sm font-bold text-dalili-ink">Target (%)</span>
-              <input value={target} onChange={(event) => setTarget(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-dalili-green" />
+              <input value={target} onChange={(event) => setTarget(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-3 py-2 text-sm outline-none focus:border-dalili-green" />
             </label>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-amber-100 bg-amber-50 p-5">
+          <div className="mt-3 rounded-2xl border border-amber-100 bg-amber-50 p-3">
             <div className="flex items-start gap-3">
               <div className="rounded-2xl bg-white p-2 text-amber-700"><Sparkles className="h-5 w-5" /></div>
               <div>
                 <h2 className="font-black text-amber-950">Dalili AI interpretation</h2>
-                <p className="mt-1 text-sm leading-6 text-amber-900">{aiExplanation}</p>
-                <p className="mt-2 text-xs leading-5 text-amber-800">Rule: Python calculates the numbers. Dalili explains what they mean and warns when the evidence is weak.</p>
+                <p className="mt-1 text-sm leading-5 text-amber-900">{aiExplanation}</p>
+                <details className="compact-details mt-2 text-xs text-amber-800"><summary className="font-bold">Show evidence note</summary><p className="mt-1">Python calculates the numbers. Dalili explains what they mean and warns when the evidence is weak.</p></details>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 p-3">
             <div className="flex items-center gap-2">
               <Calculator className="h-5 w-5 text-dalili-green" />
               <h2 className="font-bold text-dalili-ink">Numerator rule</h2>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <select value={numerator.column} onChange={(event) => setNumerator({ ...numerator, column: event.target.value })} className="rounded-2xl border border-slate-300 px-4 py-3 text-sm">
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              <select value={numerator.column} onChange={(event) => setNumerator({ ...numerator, column: event.target.value })} className="rounded-2xl border border-slate-300 px-3 py-2 text-sm">
                 {dataset.columns.map((column) => <option key={column}>{column}</option>)}
               </select>
-              <select value={numerator.operator} onChange={(event) => setNumerator({ ...numerator, operator: event.target.value as Operator })} className="rounded-2xl border border-slate-300 px-4 py-3 text-sm">
+              <select value={numerator.operator} onChange={(event) => setNumerator({ ...numerator, operator: event.target.value as Operator })} className="rounded-2xl border border-slate-300 px-3 py-2 text-sm">
                 {operators.map((operator) => <option key={operator.value} value={operator.value}>{operator.label}</option>)}
               </select>
-              <input disabled={numerator.operator === "not_empty"} value={numerator.value} onChange={(event) => setNumerator({ ...numerator, value: event.target.value })} placeholder="Value, e.g. Yes" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm disabled:bg-slate-100" />
+              <input disabled={numerator.operator === "not_empty"} value={numerator.value} onChange={(event) => setNumerator({ ...numerator, value: event.target.value })} placeholder="Value, e.g. Yes" className="rounded-2xl border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100" />
             </div>
             <p className="mt-3 text-xs font-semibold text-slate-500">Current rule: {conditionText(numerator)}</p>
           </div>
 
-          <div className="mt-4 rounded-3xl border border-slate-200 bg-white p-5">
+          <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <Filter className="h-5 w-5 text-dalili-green" />
@@ -529,38 +529,38 @@ export function IndicatorsClient() {
               </label>
             </div>
             {!useAllRecords && (
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <select value={denominator.column} onChange={(event) => setDenominator({ ...denominator, column: event.target.value })} className="rounded-2xl border border-slate-300 px-4 py-3 text-sm">
+              <div className="mt-3 grid gap-3 md:grid-cols-3">
+                <select value={denominator.column} onChange={(event) => setDenominator({ ...denominator, column: event.target.value })} className="rounded-2xl border border-slate-300 px-3 py-2 text-sm">
                   {dataset.columns.map((column) => <option key={column}>{column}</option>)}
                 </select>
-                <select value={denominator.operator} onChange={(event) => setDenominator({ ...denominator, operator: event.target.value as Operator })} className="rounded-2xl border border-slate-300 px-4 py-3 text-sm">
+                <select value={denominator.operator} onChange={(event) => setDenominator({ ...denominator, operator: event.target.value as Operator })} className="rounded-2xl border border-slate-300 px-3 py-2 text-sm">
                   {operators.map((operator) => <option key={operator.value} value={operator.value}>{operator.label}</option>)}
                 </select>
-                <input disabled={denominator.operator === "not_empty"} value={denominator.value} onChange={(event) => setDenominator({ ...denominator, value: event.target.value })} placeholder="Value, e.g. Female" className="rounded-2xl border border-slate-300 px-4 py-3 text-sm disabled:bg-slate-100" />
+                <input disabled={denominator.operator === "not_empty"} value={denominator.value} onChange={(event) => setDenominator({ ...denominator, value: event.target.value })} placeholder="Value, e.g. Female" className="rounded-2xl border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100" />
               </div>
             )}
             <p className="mt-3 text-xs font-semibold text-slate-500">Current rule: {useAllRecords ? "All records" : conditionText(denominator)}</p>
           </div>
 
-          <label className="mt-5 block">
+          <label className="mt-3 block">
             <span className="text-sm font-bold text-dalili-ink">Disaggregate by</span>
-            <select value={disaggregateBy} onChange={(event) => setDisaggregateBy(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm">
+            <select value={disaggregateBy} onChange={(event) => setDisaggregateBy(event.target.value)} className="mt-2 w-full rounded-2xl border border-slate-300 px-3 py-2 text-sm">
               <option value="">No disaggregation</option>
               {dataset.columns.map((column) => <option key={column}>{column}</option>)}
             </select>
           </label>
         </section>
 
-        <section className="space-y-6">
-          <div className="card p-6">
+        <section className="space-y-4">
+          <div className="compact-section">
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dalili-green">Result</p>
-            <div className="mt-5 flex items-end gap-3">
-              <span className="text-7xl font-black text-dalili-navy">{results.overall}%</span>
+            <div className="mt-3 flex items-end gap-3">
+              <span className="text-5xl font-black text-dalili-navy">{results.overall}%</span>
             </div>
-            <div className="mt-5 h-4 overflow-hidden rounded-full bg-slate-100">
+            <div className="mt-3 h-4 overflow-hidden rounded-full bg-slate-100">
               <div className="h-full rounded-full bg-dalili-green" style={{ width: `${Math.min(results.overall, 100)}%` }} />
             </div>
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+            <div className="mt-3 rounded-2xl bg-slate-50 p-3 text-sm text-slate-600">
               <p className="font-bold text-dalili-ink">Show calculation</p>
               <p className="mt-1">{results.numeratorCount.toLocaleString()} / {results.denominatorCount.toLocaleString()} = {results.overall}%</p>
               <p className="mt-1">Numerator: {conditionText(numerator)}</p>
@@ -568,15 +568,15 @@ export function IndicatorsClient() {
             </div>
           </div>
 
-          <div className="card p-6">
+          <div className="compact-section">
             <div className="flex items-center gap-2">
               <Target className="h-5 w-5 text-dalili-green" />
               <h2 className="text-lg font-bold text-dalili-ink">Target status</h2>
             </div>
             {gapToTarget === null ? (
-              <p className="mt-4 text-sm text-slate-500">Enter a numeric target to calculate the gap.</p>
+              <p className="mt-3 text-sm text-slate-500">Enter a numeric target to calculate the gap.</p>
             ) : (
-              <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+              <div className="mt-3 rounded-2xl bg-slate-50 p-3">
                 <p className="text-sm text-slate-500">Gap to target</p>
                 <p className={`mt-1 text-3xl font-black ${gapToTarget >= 0 ? "text-emerald-700" : "text-amber-700"}`}>
                   {gapToTarget >= 0 ? "+" : ""}{gapToTarget} pp
@@ -584,12 +584,12 @@ export function IndicatorsClient() {
                 <p className="mt-2 text-sm text-slate-500">Target: {validTarget}%</p>
               </div>
             )}
-            <div className="mt-4 flex gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-800">
+            <div className="mt-3 flex gap-3 rounded-2xl bg-emerald-50 p-3 text-emerald-800">
               <CheckCircle2 className="h-5 w-5 shrink-0" />
               <p className="text-sm font-semibold">This indicator result is saved locally and will be available for the Insights module.</p>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4">
+            <div className="mt-3 rounded-2xl border border-slate-200 bg-white p-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-bold text-dalili-ink">Backend storage</p>
@@ -599,7 +599,7 @@ export function IndicatorsClient() {
                 <button
                   onClick={saveIndicatorToBackend}
                   disabled={isSavingIndicator}
-                  className="rounded-xl bg-dalili-green px-4 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-xl bg-dalili-green px-3 py-2 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSavingIndicator ? "Saving..." : "Save to backend"}
                 </button>
@@ -609,33 +609,33 @@ export function IndicatorsClient() {
         </section>
       </div>
 
-      <section className="card p-6">
+      <section className="compact-section">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-dalili-green" />
           <h2 className="text-lg font-bold text-dalili-ink">Disaggregated results</h2>
         </div>
         {results.groups.length === 0 ? (
-          <div className="mt-5 rounded-2xl bg-slate-50 p-8 text-center text-sm text-slate-500">Select a disaggregation column to view grouped indicator results.</div>
+          <div className="mt-3 rounded-2xl bg-slate-50 p-8 text-center text-sm text-slate-500">Select a disaggregation column to view grouped indicator results.</div>
         ) : (
-          <div className="mt-5 overflow-x-auto">
+          <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
-                  <th className="px-3 py-3 font-bold">Group</th>
-                  <th className="px-3 py-3 font-bold">Numerator</th>
-                  <th className="px-3 py-3 font-bold">Denominator</th>
-                  <th className="px-3 py-3 font-bold">Result</th>
-                  <th className="px-3 py-3 font-bold">Gap</th>
+                  <th className="px-3 py-2 font-bold">Group</th>
+                  <th className="px-3 py-2 font-bold">Numerator</th>
+                  <th className="px-3 py-2 font-bold">Denominator</th>
+                  <th className="px-3 py-2 font-bold">Result</th>
+                  <th className="px-3 py-2 font-bold">Gap</th>
                 </tr>
               </thead>
               <tbody>
                 {results.groups.map((item) => (
                   <tr key={item.group} className="border-b border-slate-100">
-                    <td className="px-3 py-3 font-semibold text-dalili-ink">{item.group}</td>
-                    <td className="px-3 py-3 text-slate-600">{item.numerator.toLocaleString()}</td>
-                    <td className="px-3 py-3 text-slate-600">{item.denominator.toLocaleString()}</td>
-                    <td className="px-3 py-3 font-bold text-dalili-green">{item.percentage}%</td>
-                    <td className="px-3 py-3 text-slate-600">{item.gapToTarget === null ? "—" : `${item.gapToTarget >= 0 ? "+" : ""}${item.gapToTarget} pp`}</td>
+                    <td className="px-3 py-2 font-semibold text-dalili-ink">{item.group}</td>
+                    <td className="px-3 py-2 text-slate-600">{item.numerator.toLocaleString()}</td>
+                    <td className="px-3 py-2 text-slate-600">{item.denominator.toLocaleString()}</td>
+                    <td className="px-3 py-2 font-bold text-dalili-green">{item.percentage}%</td>
+                    <td className="px-3 py-2 text-slate-600">{item.gapToTarget === null ? "—" : `${item.gapToTarget >= 0 ? "+" : ""}${item.gapToTarget} pp`}</td>
                   </tr>
                 ))}
               </tbody>
