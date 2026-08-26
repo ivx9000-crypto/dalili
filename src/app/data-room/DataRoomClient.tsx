@@ -81,6 +81,16 @@ function readJson<T>(key: string): T | null {
   }
 }
 
+function safeSetLocalStorage(key: string, value: unknown) {
+  if (typeof window === "undefined") return true;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function getActiveProjectFromStorage(): ProjectRecord | null {
   const projects = readJson<ProjectRecord[]>(PROJECTS_KEY);
   const activeId = readJson<string>(ACTIVE_PROJECT_KEY);
@@ -408,8 +418,8 @@ export function DataRoomClient() {
   const syncedDatasetKeyRef = useRef<string>("");
 
   const analysis = useMemo(() => analyseRows(rows), [rows]);
-  const previewRows = analysis.rows.slice(0, 8);
-  const previewColumns = analysis.columns.slice(0, 8);
+  const previewRows = useMemo(() => analysis.rows.slice(0, 8), [analysis.rows]);
+  const previewColumns = useMemo(() => analysis.columns.slice(0, 8), [analysis.columns]);
   const filteredColumnProfiles = analysis.columnProfiles.filter((profile) =>
     profile.column.toLowerCase().includes(searchTerm.toLowerCase()),
   );
@@ -504,19 +514,32 @@ export function DataRoomClient() {
       fileName,
       uploadedAt: new Date().toISOString(),
       columns: analysis.columns,
-      rows: rows.slice(0, 5000),
-      storedRowCount: Math.min(rows.length, 5000),
+      rows: rows.slice(0, 1000),
+      storedRowCount: Math.min(rows.length, 1000),
       totalRowCount: rows.length,
       note:
-        rows.length > 5000
-          ? "Prototype storage keeps the first 5,000 rows in the browser. The production backend will process the full dataset."
-          : "Full dataset stored in browser for prototype calculations.",
+        rows.length > 1000
+          ? "Browser storage keeps the first 1,000 rows for quick calculations. Backend file sync preserves the uploaded file when an active backend project is selected."
+          : "Dataset stored in browser for quick calculations.",
     };
 
-    window.localStorage.setItem("dalili.latestQualityReport", JSON.stringify(payload));
-    window.localStorage.setItem("dalili.latestDataset", JSON.stringify(datasetPayload));
-    window.localStorage.setItem("dalili.latestCleanedDataset", JSON.stringify(datasetPayload));
-    window.localStorage.setItem("dalili.latestDataDictionary", JSON.stringify({ fileName, generatedAt: new Date().toISOString(), columns: analysis.columnProfiles }));
+    const qualitySaved = safeSetLocalStorage("dalili.latestQualityReport", payload);
+    const datasetSaved = safeSetLocalStorage("dalili.latestDataset", datasetPayload);
+    const cleanedSaved = safeSetLocalStorage("dalili.latestCleanedDataset", datasetPayload);
+    const dictionarySaved = safeSetLocalStorage("dalili.latestDataDictionary", { fileName, generatedAt: new Date().toISOString(), columns: analysis.columnProfiles });
+
+    if (!qualitySaved || !datasetSaved || !cleanedSaved || !dictionarySaved) {
+      const slimDatasetPayload = {
+        ...datasetPayload,
+        rows: rows.slice(0, 200),
+        storedRowCount: Math.min(rows.length, 200),
+        note: "Browser storage was limited, so Dalili kept a preview only. The backend file upload still preserves the uploaded file when a backend project is selected.",
+      };
+      safeSetLocalStorage("dalili.latestDataset", slimDatasetPayload);
+      safeSetLocalStorage("dalili.latestCleanedDataset", slimDatasetPayload);
+      setMetadataStatus("Dataset was read successfully, but your browser could only store a preview. Backend sync will preserve the uploaded file where available.");
+    }
+
     void syncDatasetMetadataToBackend();
   }, [fileName, rows.length, analysis, previewColumns, previewRows, currentFile]);
 

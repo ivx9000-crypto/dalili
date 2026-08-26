@@ -1,42 +1,11 @@
-# Dalili Starter v54 — Online Deployment Execution Pack
+# Dalili v55.1 — Data Room Crash Hotfix
 
-This package preserves the v53 working product and adds the final online deployment execution files for a Vercel frontend + Render backend + managed PostgreSQL setup.
+This package preserves v55 Guided M&E Setup and Project Workflow and fixes the Data Room crash when uploading and cleaning programme data.
 
-## Key additions
+Key fixes:
+- Stabilised Data Room upload/render cycle.
+- Added safe browser storage handling for large datasets.
+- Prevented large uploads from crashing the page when localStorage is full.
+- Preserved guided workflow, project guide, reports, maps, authentication, PostgreSQL and online deployment settings.
 
-- `backend/start_production.sh` — runs Alembic migrations then starts FastAPI.
-- `render.yaml` — backend deployment blueprint.
-- `vercel.json` — frontend deployment configuration.
-- `.env.vercel.example` — frontend production variables.
-- `backend/.env.production.example` — backend production variables.
-- `docs/V54_ONLINE_DEPLOYMENT_STEP_BY_STEP.md` — deployment guide.
-- `docs/V54_RENDER_VERCEL_ENV_VALUES.md` — environment variable guide.
-- `docs/V54_ONLINE_SMOKE_TEST_CHECKLIST.md` — after-deployment test checklist.
-- `scripts/v54_verify_local_before_deploy.bat` — local pre-deployment check.
-- `scripts/v54_check_online_backend.bat` — online backend route checker.
-
-## Local check
-
-```powershell
-cd D:\Dalili
-scripts\v54_verify_local_before_deploy.bat
-```
-
-## Backend local start
-
-```powershell
-cd D:\Dalili\backend
-D:\Dalili\.venv\Scripts\Activate.ps1
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-## Frontend local start
-
-```powershell
-cd D:\Dalili
-npm run dev
-```
-
-## Deployment guide
-
-Read `docs/V54_ONLINE_DEPLOYMENT_STEP_BY_STEP.md`.
+Install by copying files into `D:\Dalili`, replacing existing files, then run `npm install`, `npm run build`, and `npm run dev`.
