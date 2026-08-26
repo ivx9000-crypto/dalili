@@ -1,19 +1,24 @@
-# Dalili starter v58 — Production Stability and First-User Testing
+# Dalili starter v59 — Flexible Quantitative Indicator Calculator
 
-This version preserves v57 and adds stability, first-user testing, and support tools.
+This version strengthens the Track Results page so Dalili can compute common quantitative indicators, including averages and disaggregated tables.
 
-## New in v58
+## Main changes
 
-- `/support` Help & Testing page.
-- Local browser error log and global crash screen.
-- Data Room upload validation for unsupported files and >15MB browser-side files.
-- Backend `/ops/stability` endpoint.
-- Topbar notification when local issue notes exist.
-- First-user testing, backup, monitoring, and stability docs.
+- Track Results now supports calculation types: percentage, count, average, sum, minimum and maximum.
+- Users can calculate average age from an uploaded dataset.
+- Users can break results down by any column, such as district, facility, sex, age group or month.
+- Added quick actions for Average age, Average by location and Count by location.
+- The result panel now shows valid records, excluded/missing records, calculation text and a simple Dalili explanation.
+- Breakdown tables now work for averages, counts, sums, min/max and percentages.
+- Export now includes both a text summary and a CSV breakdown table.
+
+## Design principle
+
+Python/browser logic calculates. Dalili explains.
 
 ## Install
 
-Copy the package into `D:\Dalili`, replacing files.
+Copy this package into `D:\Dalili`, replace files, then run:
 
 ```powershell
 cd D:\Dalili
@@ -22,7 +27,7 @@ npm run build
 npm run dev
 ```
 
-Backend:
+Backend, if testing locally:
 
 ```powershell
 cd D:\Dalili\backend
@@ -34,35 +39,20 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 
 ```powershell
 cd D:\Dalili
-.\scripts\v58_production_stability_checklist.bat
+.\scripts\v59_flexible_indicator_calculator_checklist.bat
 ```
 
-Open:
+Main page to test:
 
-- `/support`
-- `/workspace`
-- `/data-room`
-- `/quality-check`
-- `/indicators`
-- `/reports`
-- `/settings`
-
-Backend endpoints:
-
-- `/health`
-- `/ops/version`
-- `/ops/database`
-- `/ops/stability`
-
-## Deploy
-
-After build passes:
-
-```powershell
-cd D:\Dalili
-git add .
-git commit -m "Add production stability and first-user testing tools"
-git push
+```text
+/indicators
 ```
 
-Redeploy Vercel. Redeploy Render if backend files changed.
+Upload data, then test:
+
+- average age
+- average age by district/location
+- count by district/location
+- percentage indicators
+- export result
+- export CSV table
