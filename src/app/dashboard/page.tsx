@@ -22,8 +22,8 @@ export default function DashboardPage() {
       <ProductOnboardingCard />
       <WorkflowNudge context="dashboard" />
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <EmptyMetric label="Projects" detail="Start the guided M&E journey. Dalili will help you know what to track, collect, analyse and report." href="/projects?new=1" />
-        <EmptyMetric label="Data room" detail="Upload evidence you already have, or use the Project Guide to decide what data to collect." href="/data-room" />
+        <EmptyMetric label="Projects" detail="Start one guided flow: create project, upload evidence and let Dalili prepare the report path." href="/start" />
+        <EmptyMetric label="Data room" detail="Upload everything you have; Dalili will organise the useful files." href="/data-room" />
         <EmptyMetric label="Indicators" detail="Calculate traceable numerators, denominators, percentages and disaggregations." href="/indicators" />
         <EmptyMetric label="Reports" detail="Draft and export branded reports after data and insights are reviewed." href="/reports" />
       </div>

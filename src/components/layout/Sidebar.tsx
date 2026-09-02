@@ -16,22 +16,30 @@ import {
   Users,
   UserCircle,
   LifeBuoy,
+  ClipboardCheck,
+  Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { getSession, isAdminRole } from "@/lib/auth-client";
 
-const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Projects", href: "/projects", icon: FolderOpen },
-  { name: "Project Guide", href: "/workspace", icon: ClipboardList },
+const primaryNavItems = [
+  { name: "Home", href: "/dashboard", icon: Home },
+  { name: "Start Analysis", href: "/start", icon: Sparkles },
+  { name: "My Projects", href: "/projects", icon: FolderOpen },
+  { name: "Project Workspace", href: "/workspace", icon: ClipboardList },
+  { name: "Reports", href: "/reports", icon: FileText },
+  { name: "Support", href: "/support", icon: LifeBuoy },
+];
+
+const advancedNavItems = [
   { name: "Data Room", href: "/data-room", icon: Database },
   { name: "Quality Check", href: "/quality-check", icon: ShieldCheck },
   { name: "Track Results", href: "/indicators", icon: BarChart3 },
   { name: "Insights", href: "/insights", icon: Lightbulb },
-  { name: "Reports", href: "/reports", icon: FileText },
   { name: "Documents", href: "/documents", icon: FileText },
   { name: "Maps", href: "/maps", icon: Map },
   { name: "AI Assistant", href: "/ai-assistant", icon: Bot },
-  { name: "Help & Testing", href: "/support", icon: LifeBuoy },
+  { name: "App Review", href: "/qa-review", icon: ClipboardCheck },
   { name: "Team", href: "/team", icon: Users },
   { name: "Account", href: "/account", icon: UserCircle },
   { name: "Admin Users", href: "/admin/users", icon: Users },
@@ -60,20 +68,43 @@ export function Sidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
-        {navItems.filter((item) => item.name !== "Admin Users" || isAdminRole(role)).map((item) => {
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+        {primaryNavItems.map((item) => {
           const Icon = item.icon;
           return (
             <a
               key={item.name}
               href={item.href}
-              className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-emerald-50 transition hover:bg-white/10 hover:text-white"
+              className={item.name === "Start Analysis"
+                ? "flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 text-sm font-black text-[#073B2A] transition hover:bg-emerald-50"
+                : "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-emerald-50 transition hover:bg-white/10 hover:text-white"}
             >
-              <Icon className="h-4 w-4 text-emerald-100" />
+              <Icon className={item.name === "Start Analysis" ? "h-4 w-4 text-[#073B2A]" : "h-4 w-4 text-emerald-100"} />
               <span>{item.name}</span>
             </a>
           );
         })}
+
+        <details className="pt-2 text-emerald-50">
+          <summary className="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-2 text-xs font-black uppercase tracking-[0.16em] text-emerald-100 hover:bg-white/10">
+            Advanced tools <ChevronDown className="h-3.5 w-3.5" />
+          </summary>
+          <div className="mt-1 space-y-0.5">
+            {advancedNavItems.filter((item) => item.name !== "Admin Users" || isAdminRole(role)).map((item) => {
+              const Icon = item.icon;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-emerald-50 transition hover:bg-white/10 hover:text-white"
+                >
+                  <Icon className="h-4 w-4 text-emerald-100" />
+                  <span>{item.name}</span>
+                </a>
+              );
+            })}
+          </div>
+        </details>
       </nav>
 
       <div className="px-3 pb-4">
