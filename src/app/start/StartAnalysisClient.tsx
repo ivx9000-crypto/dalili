@@ -256,6 +256,7 @@ export function StartAnalysisClient() {
   const [busy, setBusy] = useState(false);
   const [uploads, setUploads] = useState<UploadedSummary[]>([]);
   const [message, setMessage] = useState("");
+  const [reportType, setReportType] = useState("Donor report");
   const [project, setProject] = useState<Project>({
     id: `proj-${Date.now()}`,
     name: "",
@@ -270,11 +271,12 @@ export function StartAnalysisClient() {
     description: "",
     createdAt: new Date().toISOString().slice(0, 10),
     source: "local",
-    instructions: "Help us turn uploaded project evidence into a donor-ready report. Keep explanations simple and flag weak evidence.",
+    instructions: "Prepare a clear donor/client-ready report from the uploaded project evidence. Keep the language simple, show evidence, and flag weak or missing data.",
   });
 
   const canCreate = project.name.trim().length >= 2 && project.organisation.trim().length >= 2;
   const evidenceSummary = useMemo(() => uploads.length ? `${uploads.length} file${uploads.length === 1 ? "" : "s"} reviewed` : "No evidence uploaded yet", [uploads]);
+  const progress = step === 1 ? 20 : step === 2 ? 45 : step === 3 ? 75 : 100;
 
   function saveProject() {
     const saved = readJson<Project[]>(PROJECTS_KEY) ?? [];
@@ -283,6 +285,7 @@ export function StartAnalysisClient() {
     saveJson(PROJECTS_KEY, [nextProject, ...cleaned]);
     saveJson(ACTIVE_KEY, nextProject.id);
     saveJson("dalili.projectInstructions", nextProject.instructions || "");
+    saveJson("dalili.requestedReportType", reportType);
     window.dispatchEvent(new Event("dalili-projects-changed"));
     setProject(nextProject);
   }
@@ -291,7 +294,7 @@ export function StartAnalysisClient() {
     if (!files?.length) return;
     saveProject();
     setBusy(true);
-    setMessage("Dalili is reviewing your uploaded evidence...");
+    setMessage("Dalili is reviewing your project evidence...");
     const summaries: UploadedSummary[] = [];
     let firstQuality: ReturnType<typeof buildQuality> | null = null;
     let firstIndicator: ReturnType<typeof buildAutoIndicator> | null = null;
@@ -312,26 +315,28 @@ export function StartAnalysisClient() {
             rows: rows.slice(0, 1000),
             storedRowCount: Math.min(rows.length, 1000),
             totalRowCount: rows.length,
-            note: "Uploaded through Start Analysis. Dalili kept a safe preview for quick results and reporting.",
+            note: "Uploaded through Start. Dalili kept a safe preview for quick results and reporting.",
           });
           saveJson("dalili.latestQualityReport", quality);
           saveJson("dalili.latestDataDictionary", { fileName: file.name, generatedAt: new Date().toISOString(), columns: quality.columnProfiles });
           saveJson("dalili.latestIndicatorResult", indicator);
           summaries.push({ name: file.name, type: "dataset", rows: rows.length, columns: columns.length, status: `${rows.length} rows and ${columns.length} columns reviewed` });
         } else if (lower.endsWith(".pdf") || lower.endsWith(".doc") || lower.endsWith(".docx") || lower.endsWith(".txt")) {
-          summaries.push({ name: file.name, type: "document", status: "Stored as project evidence. Document extraction can be reviewed in Documents." });
+          summaries.push({ name: file.name, type: "document", status: "Added as project evidence" });
         } else {
-          summaries.push({ name: file.name, type: "other", status: "File noted. Use Data Room for detailed processing if needed." });
+          summaries.push({ name: file.name, type: "other", status: "File added, but not automatically analysed" });
         }
       }
-      setUploads((current) => [...summaries, ...current]);
-      saveJson("dalili.startAnalysisUploads", [...summaries, ...uploads]);
+      const nextUploads = [...summaries, ...uploads];
+      setUploads(nextUploads);
+      saveJson("dalili.startAnalysisUploads", nextUploads);
+      saveJson("dalili.projectEvidence", nextUploads);
       if (firstQuality || firstIndicator) {
-        const report = buildReportText(project, [...summaries, ...uploads], firstQuality, firstIndicator);
-        saveJson("dalili.latestReportDraft", { title: `${project.name || "Project"} donor report draft`, reportType: "donor", createdAt: new Date().toISOString(), content: report });
+        const report = buildReportText(project, nextUploads, firstQuality, firstIndicator).replace("DRAFT DONOR REPORT", `DRAFT ${reportType.toUpperCase()}`);
+        saveJson("dalili.latestReportDraft", { title: `${project.name || "Project"} ${reportType.toLowerCase()} draft`, reportType, createdAt: new Date().toISOString(), content: report });
         saveJson("dalili.analysisReportText", report);
       }
-      setMessage("Done. Dalili prepared a quick review and draft reporting path.");
+      setMessage("Done. Dalili has reviewed the files and prepared a first reporting path.");
       setStep(3);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Dalili could not read one of the files. Try a smaller CSV/Excel file first.");
@@ -346,62 +351,80 @@ export function StartAnalysisClient() {
   }
 
   return (
-    <div className="compact-page">
-      <section className="compact-hero bg-[#073B2A] text-white shadow-sm">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="modern-page">
+      <section className="modern-hero p-5 md:p-8">
+        <div className="relative z-10 grid gap-6 lg:grid-cols-[1.1fr_.9fr] lg:items-center">
           <div>
             <p className="compact-label text-emerald-100">Start here</p>
-            <h1 className="mt-1 max-w-3xl text-2xl font-black">Upload what you have. Dalili guides you to a report.</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-emerald-50">Create a project, add all relevant evidence, then let Dalili review the data, suggest what can be tracked and prepare a donor report or brief for you to approve.</p>
+            <h1 className="mt-2 max-w-4xl text-3xl font-black tracking-tight md:text-5xl">From project files to a donor-ready report.</h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-emerald-50">Create one project workspace, upload everything you have, and let Dalili organise the evidence, check the data, suggest findings and prepare the report for your approval.</p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button onClick={() => setOpen(true)} className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-[#073B2A] shadow-sm hover:bg-emerald-50">
+                Start with files <ArrowRight className="h-4 w-4" />
+              </button>
+              <a href="/reports" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white hover:bg-white/15">View reports</a>
+            </div>
           </div>
-          <button onClick={() => setOpen(true)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-[#073B2A] hover:bg-emerald-50">
-            Start analysis <ArrowRight className="h-4 w-4" />
-          </button>
+          <div className="rounded-3xl bg-white/12 p-4 ring-1 ring-white/15 backdrop-blur">
+            <div className="rounded-2xl bg-white p-4 text-[#102033] shadow-sm">
+              <p className="text-xs font-black uppercase tracking-[0.16em] text-[#0B6B4B]">Simple promise</p>
+              <h2 className="mt-1 text-xl font-black">Upload first. Decide later.</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-600">The user should not have to choose indicators, quality checks or disaggregation first. Dalili finds what is possible and asks for approval before reporting.</p>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-bold text-white">
+              <span className="rounded-2xl bg-white/10 p-3">Evidence upload</span>
+              <span className="rounded-2xl bg-white/10 p-3">Auto-review</span>
+              <span className="rounded-2xl bg-white/10 p-3">Finding approval</span>
+              <span className="rounded-2xl bg-white/10 p-3">Report export</span>
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="grid gap-3 md:grid-cols-4">
         {[
-          ["1", "Project", "Tell Dalili the basics."],
-          ["2", "Upload", "Add all project evidence."],
-          ["3", "Review", "Dalili checks and suggests."],
-          ["4", "Report", "Approve and export output."],
+          ["1", "Project", "A few basics only."],
+          ["2", "Evidence", "Upload all files at once."],
+          ["3", "Review", "Dalili explains what it found."],
+          ["4", "Report", "Export a usable output."],
         ].map(([number, title, text]) => (
-          <div key={title} className="compact-section">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#073B2A] text-xs font-black text-white">{number}</div>
+          <div key={title} className="modern-panel">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-[#073B2A] text-xs font-black text-white">{number}</div>
             <h2 className="mt-3 text-base font-black text-[#102033]">{title}</h2>
             <p className="mt-1 text-sm text-slate-500">{text}</p>
           </div>
         ))}
       </section>
 
-      <section className="compact-section">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <section className="modern-panel p-5">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-lg font-black text-[#102033]">Current simple flow</h2>
-            <p className="mt-1 text-sm text-slate-500">Use this when someone does not know M&E. Advanced tools remain available only when needed.</p>
+            <h2 className="text-xl font-black text-[#102033]">The main Dalili journey</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">One screen, one task, one Next button. Advanced M&E tools are kept in the background unless someone needs them.</p>
           </div>
-          <div className="flex flex-wrap gap-2 text-xs font-bold text-slate-600">
-            <span className="rounded-full bg-slate-100 px-3 py-1">{project.name || "No project started"}</span>
-            <span className="rounded-full bg-slate-100 px-3 py-1">{evidenceSummary}</span>
-          </div>
+          <button onClick={() => setOpen(true)} className="modern-primary-button">Open guided setup <Sparkles className="h-4 w-4" /></button>
         </div>
       </section>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-3xl bg-white p-5 shadow-2xl">
+          <div className="max-h-[94vh] w-full max-w-5xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
               <div>
-                <p className="compact-label text-[#0B6B4B]">Guided project setup</p>
-                <h2 className="mt-1 text-xl font-black text-[#102033]">One project workspace. All evidence in one place.</h2>
-                <p className="mt-1 text-sm text-slate-500">Borrowing the simplicity of project workspaces: create the project, upload its knowledge/evidence, add instructions, then let Dalili prepare the M&E pathway.</p>
+                <p className="compact-label text-[#0B6B4B]">Guided setup</p>
+                <h2 className="mt-1 text-2xl font-black text-[#102033]">Upload-to-report workspace</h2>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">Tell Dalili the minimum it needs, upload the project evidence, then review the reporting path it prepares.</p>
               </div>
               <button onClick={() => setOpen(false)} className="rounded-xl p-2 text-slate-500 hover:bg-slate-100"><X className="h-5 w-5" /></button>
             </div>
 
-            <div className="mt-4 grid gap-2 md:grid-cols-3">
-              {["Project details", "Upload evidence", "Review and report"].map((label, index) => (
+            <div className="mt-5">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-500"><span>Progress</span><span>{progress}%</span></div>
+              <div className="mt-2 h-2.5 rounded-full bg-slate-100"><div className="workflow-line h-2.5 rounded-full" style={{ width: `${progress}%` }} /></div>
+            </div>
+
+            <div className="mt-5 grid gap-2 md:grid-cols-4">
+              {["Project", "Upload", "Review", "Report"].map((label, index) => (
                 <button key={label} onClick={() => setStep(index + 1)} className={`rounded-2xl border p-3 text-left text-sm font-black ${step === index + 1 ? "border-[#073B2A] bg-emerald-50 text-[#073B2A]" : "border-slate-200 text-slate-600"}`}>
                   {index + 1}. {label}
                 </button>
@@ -410,67 +433,90 @@ export function StartAnalysisClient() {
 
             {step === 1 && (
               <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <label className="text-sm font-bold text-slate-700">Project name<input value={project.name} onChange={(e) => setProject({ ...project, name: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="e.g. Youth skills training project" /></label>
-                <label className="text-sm font-bold text-slate-700">Organisation/company<input value={project.organisation} onChange={(e) => setProject({ ...project, organisation: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Your organisation" /></label>
-                <label className="text-sm font-bold text-slate-700">Sector<select value={project.sector} onChange={(e) => setProject({ ...project, sector: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2">{sectors.map((sector) => <option key={sector}>{sector}</option>)}</select></label>
-                <label className="text-sm font-bold text-slate-700">Funder/client<input value={project.donor} onChange={(e) => setProject({ ...project, donor: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Optional" /></label>
-                <label className="text-sm font-bold text-slate-700">Location<input value={project.geography} onChange={(e) => setProject({ ...project, geography: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Districts, region or country" /></label>
-                <label className="text-sm font-bold text-slate-700">Reporting period<input value={project.reportingPeriod} onChange={(e) => setProject({ ...project, reportingPeriod: e.target.value })} className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="e.g. Q3 2026" /></label>
-                <label className="md:col-span-2 text-sm font-bold text-slate-700">What is the project trying to achieve?<textarea value={project.description} onChange={(e) => setProject({ ...project, description: e.target.value })} className="mt-1 min-h-24 w-full rounded-xl border border-slate-300 px-3 py-2" placeholder="Write it simply. Dalili will use this to suggest what to track and report." /></label>
-                <label className="md:col-span-2 text-sm font-bold text-slate-700">Project instructions for Dalili<textarea value={project.instructions} onChange={(e) => setProject({ ...project, instructions: e.target.value })} className="mt-1 min-h-20 w-full rounded-xl border border-slate-300 px-3 py-2" /></label>
+                <label className="text-sm font-bold text-slate-700">Project name<input value={project.name} onChange={(e) => setProject({ ...project, name: e.target.value })} className="modern-input mt-1" placeholder="e.g. Youth skills training project" /></label>
+                <label className="text-sm font-bold text-slate-700">Organisation/company<input value={project.organisation} onChange={(e) => setProject({ ...project, organisation: e.target.value })} className="modern-input mt-1" placeholder="Your organisation" /></label>
+                <label className="text-sm font-bold text-slate-700">Sector<select value={project.sector} onChange={(e) => setProject({ ...project, sector: e.target.value })} className="modern-input mt-1">{sectors.map((sector) => <option key={sector}>{sector}</option>)}</select></label>
+                <label className="text-sm font-bold text-slate-700">Report needed<select value={reportType} onChange={(e) => setReportType(e.target.value)} className="modern-input mt-1">{["Donor report", "Project brief", "Management summary", "Data quality report", "Evaluation summary"].map((item) => <option key={item}>{item}</option>)}</select></label>
+                <label className="text-sm font-bold text-slate-700">Funder/client<input value={project.donor} onChange={(e) => setProject({ ...project, donor: e.target.value })} className="modern-input mt-1" placeholder="Optional" /></label>
+                <label className="text-sm font-bold text-slate-700">Reporting period<input value={project.reportingPeriod} onChange={(e) => setProject({ ...project, reportingPeriod: e.target.value })} className="modern-input mt-1" placeholder="e.g. Q3 2026" /></label>
+                <label className="md:col-span-2 text-sm font-bold text-slate-700">Where is the project being implemented?<input value={project.geography} onChange={(e) => setProject({ ...project, geography: e.target.value })} className="modern-input mt-1" placeholder="Districts, region or country" /></label>
+                <label className="md:col-span-2 text-sm font-bold text-slate-700">What is the project trying to achieve?<textarea value={project.description} onChange={(e) => setProject({ ...project, description: e.target.value })} className="modern-input mt-1 min-h-24" placeholder="Write it simply. Dalili will use this to suggest what can be reported." /></label>
+                <details className="compact-details md:col-span-2 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600">
+                  <summary className="font-black text-[#0B6B4B]">Optional: instructions for Dalili</summary>
+                  <textarea value={project.instructions} onChange={(e) => setProject({ ...project, instructions: e.target.value })} className="modern-input mt-3 min-h-20" />
+                </details>
                 <div className="md:col-span-2 flex justify-end">
-                  <button disabled={!canCreate} onClick={() => { saveProject(); setStep(2); }} className="inline-flex items-center gap-2 rounded-xl bg-[#073B2A] px-5 py-2.5 text-sm font-black text-white disabled:opacity-40">Next: upload evidence <ArrowRight className="h-4 w-4" /></button>
+                  <button disabled={!canCreate} onClick={() => { saveProject(); setStep(2); }} className="modern-primary-button disabled:opacity-40">Next: upload evidence <ArrowRight className="h-4 w-4" /></button>
                 </div>
               </div>
             )}
 
             {step === 2 && (
               <div className="mt-5 space-y-4">
-                <div className="rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50 p-6 text-center">
-                  <Upload className="mx-auto h-9 w-9 text-[#073B2A]" />
-                  <h3 className="mt-3 text-lg font-black text-[#102033]">Upload all project evidence</h3>
-                  <p className="mx-auto mt-1 max-w-2xl text-sm text-slate-600">Add Excel, CSV, Kobo exports, Word, PDF or text files. Dalili will organise what it can now and keep the rest as project evidence.</p>
-                  <input multiple type="file" accept=".csv,.xlsx,.xls,.doc,.docx,.pdf,.txt" onChange={(e) => void handleFiles(e.target.files)} className="mt-4 block w-full rounded-xl border border-slate-200 bg-white p-3 text-sm" />
+                <div className="rounded-3xl border-2 border-dashed border-emerald-200 bg-emerald-50 p-7 text-center">
+                  <Upload className="mx-auto h-10 w-10 text-[#073B2A]" />
+                  <h3 className="mt-3 text-2xl font-black text-[#102033]">Upload everything you have</h3>
+                  <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-slate-600">Excel, CSV, Kobo exports, Word, PDF, previous reports, workplans, budgets and notes can all sit in the same project evidence space.</p>
+                  <input multiple type="file" accept=".csv,.xlsx,.xls,.doc,.docx,.pdf,.txt" onChange={(e) => void handleFiles(e.target.files)} className="mt-5 block w-full rounded-2xl border border-slate-200 bg-white p-3 text-sm" />
                   {busy ? <p className="mt-3 inline-flex items-center gap-2 text-sm font-bold text-[#073B2A]"><Loader2 className="h-4 w-4 animate-spin" /> Reviewing files...</p> : null}
                   {message ? <p className="mt-3 text-sm font-semibold text-slate-700">{message}</p> : null}
                 </div>
                 <div className="grid gap-2">
                   {uploads.map((item) => (
-                    <div key={`${item.name}-${item.status}`} className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 text-sm">
+                    <div key={`${item.name}-${item.status}`} className="flex flex-col gap-1 rounded-2xl border border-slate-200 bg-white p-3 text-sm md:flex-row md:items-center md:justify-between">
                       <span className="font-bold text-[#102033]">{item.name}</span>
                       <span className="text-xs text-slate-500">{item.status}</span>
                     </div>
                   ))}
                 </div>
                 <div className="flex justify-between">
-                  <button onClick={() => setStep(1)} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600">Back</button>
-                  <button onClick={() => setStep(3)} className="inline-flex items-center gap-2 rounded-xl bg-[#073B2A] px-5 py-2.5 text-sm font-black text-white">Next: review and report <ArrowRight className="h-4 w-4" /></button>
+                  <button onClick={() => setStep(1)} className="modern-secondary-button">Back</button>
+                  <button onClick={() => setStep(3)} className="modern-primary-button">Next: review what Dalili found <ArrowRight className="h-4 w-4" /></button>
                 </div>
               </div>
             )}
 
             {step === 3 && (
-              <div className="mt-5 grid gap-4 lg:grid-cols-3">
-                <div className="rounded-2xl bg-emerald-50 p-4">
-                  <ShieldCheck className="h-5 w-5 text-[#073B2A]" />
-                  <h3 className="mt-2 font-black text-[#102033]">Data checked</h3>
-                  <p className="mt-1 text-sm text-slate-600">Dalili prepared a quality review and data dictionary where a dataset was available.</p>
+              <div className="mt-5 space-y-4">
+                <div className="grid gap-4 lg:grid-cols-3">
+                  <div className="rounded-3xl bg-emerald-50 p-5"><ShieldCheck className="h-5 w-5 text-[#073B2A]" /><h3 className="mt-2 font-black text-[#102033]">Evidence reviewed</h3><p className="mt-1 text-sm leading-6 text-slate-600">{evidenceSummary}. Datasets were profiled and supporting documents were added as evidence.</p></div>
+                  <div className="rounded-3xl bg-amber-50 p-5"><BarChart3 className="h-5 w-5 text-amber-700" /><h3 className="mt-2 font-black text-[#102033]">Findings prepared</h3><p className="mt-1 text-sm leading-6 text-slate-600">Dalili prepared a first result, quality notes and a draft finding path where structured data was available.</p></div>
+                  <div className="rounded-3xl bg-slate-50 p-5"><FileText className="h-5 w-5 text-slate-700" /><h3 className="mt-2 font-black text-[#102033]">Report path ready</h3><p className="mt-1 text-sm leading-6 text-slate-600">The next step is not more setup. It is reviewing what Dalili found and generating the {reportType.toLowerCase()}.</p></div>
                 </div>
-                <div className="rounded-2xl bg-amber-50 p-4">
-                  <BarChart3 className="h-5 w-5 text-amber-700" />
-                  <h3 className="mt-2 font-black text-[#102033]">Results suggested</h3>
-                  <p className="mt-1 text-sm text-slate-600">Dalili suggested an initial result and breakdown from the uploaded data.</p>
+                <div className="rounded-3xl border border-slate-200 p-5">
+                  <h3 className="text-lg font-black text-[#102033]">What Dalili can do next</h3>
+                  <ul className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+                    <li className="rounded-2xl bg-slate-50 p-3">Prepare a donor/client report draft</li>
+                    <li className="rounded-2xl bg-slate-50 p-3">Show reportable findings with evidence</li>
+                    <li className="rounded-2xl bg-slate-50 p-3">Flag weak data before sharing</li>
+                    <li className="rounded-2xl bg-slate-50 p-3">Keep calculations available under Advanced</li>
+                  </ul>
                 </div>
-                <div className="rounded-2xl bg-slate-50 p-4">
-                  <FileText className="h-5 w-5 text-slate-700" />
-                  <h3 className="mt-2 font-black text-[#102033]">Report path ready</h3>
-                  <p className="mt-1 text-sm text-slate-600">Review the findings, then export a donor report, brief or summary.</p>
+                <div className="flex justify-between">
+                  <button onClick={() => setStep(2)} className="modern-secondary-button">Back</button>
+                  <button onClick={() => setStep(4)} className="modern-primary-button">Next: create report <ArrowRight className="h-4 w-4" /></button>
                 </div>
-                <div className="lg:col-span-3 flex flex-wrap gap-3 border-t border-slate-200 pt-4">
-                  <a href="/workspace" className="inline-flex items-center gap-2 rounded-xl bg-[#073B2A] px-4 py-2 text-sm font-black text-white">Open workspace <ArrowRight className="h-4 w-4" /></a>
-                  <a href="/indicators" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-[#073B2A]">Review results</a>
-                  <a href="/reports" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-[#073B2A]">Create report</a>
-                  <button onClick={exportDraft} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-[#073B2A]"><Download className="h-4 w-4" /> Download draft</button>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="mt-5 grid gap-4 lg:grid-cols-[1fr_.8fr]">
+                <div className="rounded-3xl bg-[#073B2A] p-5 text-white">
+                  <FileText className="h-6 w-6 text-emerald-100" />
+                  <h3 className="mt-3 text-2xl font-black">Your first draft is ready to review.</h3>
+                  <p className="mt-2 text-sm leading-6 text-emerald-50">Use the report draft as a starting point. Dalili should always keep the evidence visible so the user can approve, edit or reject findings before external sharing.</p>
+                  <div className="mt-5 flex flex-wrap gap-3">
+                    <button onClick={exportDraft} className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-sm font-black text-[#073B2A]"><Download className="h-4 w-4" /> Download draft</button>
+                    <a href="/reports" className="inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-black text-white">Open reports</a>
+                  </div>
+                </div>
+                <div className="rounded-3xl border border-slate-200 p-5">
+                  <h3 className="font-black text-[#102033]">After this</h3>
+                  <div className="mt-3 space-y-2 text-sm text-slate-600">
+                    <p className="rounded-2xl bg-slate-50 p-3">Review the findings before submitting externally.</p>
+                    <p className="rounded-2xl bg-slate-50 p-3">Use Advanced only when you need detailed calculations, maps or data checks.</p>
+                    <p className="rounded-2xl bg-slate-50 p-3">Come back to Start any time to add more files.</p>
+                  </div>
                 </div>
               </div>
             )}

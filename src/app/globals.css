@@ -48,3 +48,18 @@ body {
 .compact-label { font-size: 0.68rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
 details.compact-details > summary { cursor: pointer; list-style: none; }
 details.compact-details > summary::-webkit-details-marker { display: none; }
+
+/* v62 modern simplified AI workspace refresh */
+.modern-page { display: flex; flex-direction: column; gap: 1.25rem; }
+.modern-shell { border-radius: 2rem; border: 1px solid rgba(226, 232, 240, 0.9); background: rgba(255,255,255,.92); box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08); }
+.modern-hero { position: relative; overflow: hidden; border-radius: 2rem; background: radial-gradient(circle at top right, rgba(245,180,0,.28), transparent 30%), linear-gradient(135deg, #073B2A 0%, #0B6B4B 58%, #102033 100%); color: #fff; box-shadow: 0 22px 55px rgba(7, 59, 42, 0.23); }
+.modern-hero::after { content: ""; position: absolute; inset: auto -10% -45% 35%; height: 220px; border-radius: 9999px; background: rgba(255,255,255,.08); transform: rotate(-8deg); }
+.modern-panel { border-radius: 1.5rem; border: 1px solid #e2e8f0; background: #fff; padding: 1rem; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05); }
+.modern-pill { border-radius: 9999px; padding: .35rem .75rem; font-size: .72rem; font-weight: 800; }
+.modern-primary-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 1rem; background: #073B2A; color: #fff; padding: .75rem 1rem; font-size: .875rem; font-weight: 900; box-shadow: 0 12px 24px rgba(7,59,42,.18); transition: transform .15s ease, background .15s ease; }
+.modern-primary-button:hover { background: #0B4A35; transform: translateY(-1px); }
+.modern-secondary-button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 1rem; border: 1px solid #e2e8f0; background: #fff; color: #073B2A; padding: .7rem 1rem; font-size: .875rem; font-weight: 800; }
+.modern-input { width: 100%; border-radius: 1rem; border: 1px solid #cbd5e1; background: #fff; padding: .75rem .9rem; font-size: .875rem; color: #102033; outline: none; }
+.modern-input:focus { border-color: #0B6B4B; box-shadow: 0 0 0 3px rgba(15,166,122,.14); }
+.workflow-line { background: linear-gradient(90deg, #073B2A, #0FA67A, #F5B400); }
+@media (max-width: 768px) { .modern-hero, .modern-shell { border-radius: 1.25rem; } }

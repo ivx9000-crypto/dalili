@@ -34,7 +34,7 @@ if settings.auto_create_tables and not settings.is_production:
 
 app = FastAPI(
     title=settings.app_name,
-    version="0.58.0",
+    version="0.62.0",
     description="Backend foundation for the Dalili M&E and research intelligence platform.",
 )
 

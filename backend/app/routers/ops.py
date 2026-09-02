@@ -106,7 +106,7 @@ def system_check():
 @router.get("/version")
 def ops_version():
     return {
-        "version": "0.60.0",
+        "version": "0.62.0",
         "ops_database_route": "/ops/database",
         "status": "v60 full app QA and bug-fix stabilisation loaded",
     }
@@ -145,7 +145,7 @@ def stability_check():
     db = _db_status()
     storage_dir = Path("app/storage/uploads")
     return {
-        "version": "0.60.0",
+        "version": "0.62.0",
         "environment": settings.app_env,
         "backend_ok": True,
         "database_ok": db["ok"],
